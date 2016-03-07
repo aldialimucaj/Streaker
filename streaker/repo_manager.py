@@ -4,6 +4,7 @@ import arrow
 import os
 import config
 
+
 logger = logging.getLogger(__name__)
 """
 RepoManager takes care of the repository operations such as
@@ -27,12 +28,26 @@ class RepoManager(object):
     Open existing repo passed in the constructor
     """
     def open_repo(self):
-        pass
+        if os.path.isdir(os.path.join(self.path, '.git')):
+            self.repo = Repo(self.path)
+            return self.repo != None
+
+        return False
+
     """
-    Create new repo from the path passed in the constructor
+    Create new repo from the path passed in the constructor.
+
+    Returns true if new repo created
     """
     def create_repo(self):
-        pass
+        if not os.path.isdir(os.path.join(self.path, '.git')):
+            os.mkdir(self.path)
+            self.repo = Repo.init(self.path)
+            return True
+        else:
+            self.repo = Repo(self.path)
+
+        return False
 
     def create_commit(self, date=arrow.utcnow()):
         logger.info('Creating Commit on %s at %s', self.commit_file, date)
