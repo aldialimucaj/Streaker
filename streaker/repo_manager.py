@@ -22,7 +22,7 @@ class RepoManager(object):
     """
     def __init__(self, path=os.getcwd()):
         self.path = os.path.abspath(path)
-        self.commit_file = config.COMMIT_FILE
+        self.commit_file = os.path.join(self.path, config.COMMIT_FILE)
 
     """
     Open existing repo passed in the constructor
@@ -49,10 +49,19 @@ class RepoManager(object):
 
         return False
 
-    def create_commit(self, date=arrow.utcnow()):
-        logger.info('Creating Commit on %s at %s', self.commit_file, date)
+    """
+    Generate change to the COMMIT_FILE in order to create a commit.
+    """
+    def generate_change(self):
+        logger.info('Generating change on %s ', self.commit_file)
         commit_file = open(self.commit_file, 'w')
-        commit_file.write('.')
+        # write a predefined value to the file
+        commit_file.write(config.COMMIT_VALUE)
 
-    def test(self):
-        logger.info('DateManager: test() > %s', self.path)
+    """
+    Commit changes with date.
+
+    :param date: specific date to commit changes to. defaults to now
+    """
+    def commit(self, date=arrow.utcnow()):
+        logger.info('Commiting > %s at %s', self.commit_file, date)

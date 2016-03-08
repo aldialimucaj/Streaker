@@ -23,7 +23,7 @@ class RepoManagerTest(unittest.TestCase):
     def test_repo_manager_c1_1(self):
         repo_mgr = RepoManager()
         self.assertEqual(repo_mgr.path, os.getcwd())
-        self.assertEqual(repo_mgr.commit_file, config.COMMIT_FILE)
+        self.assertEqual(repo_mgr.commit_file, os.path.join(os.getcwd(),config.COMMIT_FILE))
 
     def test_open_repo(self):
         self.assertFalse(os.path.isdir(TEST_PATH))
@@ -37,3 +37,14 @@ class RepoManagerTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(TEST_PATH))
         self.assertTrue(self.repo.create_repo())
         self.assertFalse(self.repo.create_repo())
+
+    def test_generate_change(self):
+        full_path = os.path.join(TEST_PATH, config.COMMIT_FILE)
+        print(full_path)
+        self.assertFalse(os.path.isfile(full_path))
+        self.assertTrue(self.repo.create_repo())
+        self.repo.generate_change()
+        self.assertTrue(os.path.isfile(full_path))
+
+    def test_commit(self):
+        pass
