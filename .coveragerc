@@ -1,4 +1,5 @@
 [run]
+source = streaker
 omit =
     test_*.py
 
