@@ -12,4 +12,4 @@ install:
 script: nosetests --with-coverage --cover-package=streaker
 
 after_success:
-  coveralls
+  - coveralls -v
