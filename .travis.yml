@@ -9,7 +9,7 @@ install:
   - pip install coveralls
 
 # command to run tests
-script: nosetests --with-coverage --cover-erase --coverpackage streaker
+script: nosetests --with-coverage --cover-erase --cover-package streaker
 
 after_success:
   coveralls
