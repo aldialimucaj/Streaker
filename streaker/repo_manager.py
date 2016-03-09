@@ -1,4 +1,4 @@
-from git import Repo
+from git import (Repo, Actor)
 import logging
 import arrow
 import os
@@ -22,6 +22,7 @@ class RepoManager(object):
     """
     def __init__(self, path=os.getcwd()):
         self.path = os.path.abspath(path)
+        self.author = Actor(config.COMMIT_AUTHOR['full_name'], config.COMMIT_AUTHOR['email'])
         self.commit_file = os.path.join(self.path, config.COMMIT_FILE)
 
     """
@@ -37,7 +38,7 @@ class RepoManager(object):
     """
     Create new repo from the path passed in the constructor.
 
-    Returns true if new repo created
+    :return: true if new repo created
     """
     def create_repo(self):
         if not os.path.isdir(os.path.join(self.path, '.git')):
@@ -56,7 +57,7 @@ class RepoManager(object):
     Generate change to the COMMIT_FILE in order to create a commit.
     """
     def generate_change(self):
-        logger.info('Generating change on %s ', self.commit_file)
+        logger.info('Generating Change > %s ', self.commit_file)
         try:
             commit_file = open(self.commit_file, 'w')
             # write a predefined value to the file
@@ -74,6 +75,11 @@ class RepoManager(object):
     """
     def commit(self, date=arrow.utcnow()):
         logger.info('Commiting > %s at %s', self.commit_file, date)
+        index = self.repo.index
+        index.add([self.commit_file])
+        commit_time = date.format('YYYY-MM-DDTHH:mm:ss')
+        index.commit("streaker strikes straight", author=self.author, committer=self.author, commit_date=commit_time, author_date=commit_time)
+
 
 
     """
@@ -81,7 +87,7 @@ class RepoManager(object):
     If the path does not exist that it check the parent folder.
     This way the new repo could be initialized.
 
-    Returns True if user has os.W_OK rights on the folder
+    :return: True if user has os.W_OK rights on the folder
     """
     def check_rights(self):
         # check full path

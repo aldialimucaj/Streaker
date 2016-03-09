@@ -2,6 +2,7 @@ import os
 import shutil
 import config
 import unittest
+import arrow
 from streaker.repo_manager import RepoManager
 from git import Repo
 
@@ -25,6 +26,8 @@ class RepoManagerTest(unittest.TestCase):
         repo_mgr = RepoManager()
         self.assertEqual(repo_mgr.path, os.getcwd())
         self.assertEqual(repo_mgr.commit_file, os.path.join(os.getcwd(),config.COMMIT_FILE))
+        self.assertEqual(repo_mgr.author.name, config.COMMIT_AUTHOR['full_name'])
+        self.assertEqual(repo_mgr.author.email, config.COMMIT_AUTHOR['email'])
 
     def test_open_repo(self):
         self.assertFalse(os.path.isdir(TEST_PATH))
@@ -51,7 +54,23 @@ class RepoManagerTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(full_path))
 
     def test_commit(self):
-        pass
+        # prepare the repo
+        new_repo = RepoManager('/tmp/tostay')
+        new_repo.create_repo()
+        new_repo.generate_change()
+        # create a date at set to a year ago
+        commit_time = arrow.utcnow()
+        commit_time= commit_time.replace(year=2015,month=1,day=1)
+        # commit with fake date
+        new_repo.commit(commit_time)
+        headcommit = new_repo.repo.head.commit
+        self.assertEqual(headcommit.author.name, config.COMMIT_AUTHOR['full_name'])
+        self.assertEqual(headcommit.author.email, config.COMMIT_AUTHOR['email'])
+        test_commit_date = arrow.get(headcommit.authored_date)
+        self.assertEqual(test_commit_date.year, 2015)
+        self.assertEqual(test_commit_date.month, 1)
+        self.assertEqual(test_commit_date.day, 1)
+
 
     def test_check_rights(self):
         self.assertTrue(self.repo.check_rights())
