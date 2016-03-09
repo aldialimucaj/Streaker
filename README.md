@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/aldialimucaj/streaker.svg?branch=master)](https://travis-ci.org/aldialimucaj/streaker)
+[![Coverage Status](https://coveralls.io/repos/github/aldialimucaj/streaker/badge.svg?branch=master)](https://coveralls.io/github/aldialimucaj/streaker?branch=master)
 
 # Streaker
 A GitHub streak editor. Lets you draw on the streak canvas
