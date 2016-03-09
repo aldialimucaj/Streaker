@@ -7,6 +7,7 @@ from git import Repo
 
 # CAREFUL this path will be deleted
 TEST_PATH = '/tmp/streaker_repo'
+TMP_PATH = '/tmp/'
 
 class RepoManagerTest(unittest.TestCase):
 
@@ -37,6 +38,9 @@ class RepoManagerTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(TEST_PATH))
         self.assertTrue(self.repo.create_repo())
         self.assertFalse(self.repo.create_repo())
+        # should not be able to create repo in restricted dir
+        new_repo = RepoManager('/root/repo')
+        self.assertFalse(new_repo.create_repo())
 
     def test_generate_change(self):
         full_path = os.path.join(TEST_PATH, config.COMMIT_FILE)
@@ -48,3 +52,11 @@ class RepoManagerTest(unittest.TestCase):
 
     def test_commit(self):
         pass
+
+    def test_check_rights(self):
+        self.assertTrue(self.repo.check_rights())
+        # should not be able to create repo in restricted dir
+        new_repo = RepoManager('/root/repo')
+        self.assertFalse(new_repo.check_rights())
+        new_repo = RepoManager('/')
+        self.assertFalse(new_repo.check_rights())

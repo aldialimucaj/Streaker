@@ -28,7 +28,7 @@ class RepoManager(object):
     Open existing repo passed in the constructor
     """
     def open_repo(self):
-        if os.path.isdir(os.path.join(self.path, '.git')):
+        if self.check_rights and os.path.isdir(os.path.join(self.path, '.git')):
             self.repo = Repo(self.path)
             return self.repo != None
 
@@ -41,9 +41,12 @@ class RepoManager(object):
     """
     def create_repo(self):
         if not os.path.isdir(os.path.join(self.path, '.git')):
-            os.mkdir(self.path)
-            self.repo = Repo.init(self.path)
-            return True
+            try:
+                os.mkdir(self.path)
+                self.repo = Repo.init(self.path)
+                return True
+            except (IOError, OSError) as e:
+                logger.error('create_repo(%s) - %s', self.path, e)
         else:
             self.repo = Repo(self.path)
 
@@ -54,9 +57,15 @@ class RepoManager(object):
     """
     def generate_change(self):
         logger.info('Generating change on %s ', self.commit_file)
-        commit_file = open(self.commit_file, 'w')
-        # write a predefined value to the file
-        commit_file.write(config.COMMIT_VALUE)
+        try:
+            commit_file = open(self.commit_file, 'w')
+            # write a predefined value to the file
+            commit_file.write(config.COMMIT_VALUE)
+            return True
+        except (IOError, OSError) as e:
+            logger.error('generate_change(%s) - %s', self.commit_file, e)
+
+        return True
 
     """
     Commit changes with date.
@@ -65,3 +74,19 @@ class RepoManager(object):
     """
     def commit(self, date=arrow.utcnow()):
         logger.info('Commiting > %s at %s', self.commit_file, date)
+
+
+    """
+    Check if the user hast write access the given path.
+    If the path does not exist that it check the parent folder.
+    This way the new repo could be initialized.
+
+    Returns True if user has os.W_OK rights on the folder
+    """
+    def check_rights(self):
+        # check full path
+        if os.path.isdir(self.path):
+            return os.access(self.path,os.W_OK)
+        # check parent
+        else:
+            return os.access(os.path.dirname(self.path),os.W_OK)
