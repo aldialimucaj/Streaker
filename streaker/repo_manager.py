@@ -27,6 +27,8 @@ class RepoManager(object):
 
     """
     Open existing repo passed in the constructor
+
+    :return: True if repo exists and accessable
     """
     def open_repo(self):
         if self.check_rights and os.path.isdir(os.path.join(self.path, '.git')):
@@ -38,7 +40,7 @@ class RepoManager(object):
     """
     Create new repo from the path passed in the constructor.
 
-    :return: true if new repo created
+    :return: True if new repo created
     """
     def create_repo(self):
         if not os.path.isdir(os.path.join(self.path, '.git')):
@@ -55,6 +57,8 @@ class RepoManager(object):
 
     """
     Generate change to the COMMIT_FILE in order to create a commit.
+
+    :return: True if could write to file
     """
     def generate_change(self):
         logger.info('Generating Change > %s ', self.commit_file)
@@ -66,7 +70,7 @@ class RepoManager(object):
         except (IOError, OSError) as e:
             logger.error('generate_change(%s) - %s', self.commit_file, e)
 
-        return True
+        return False
 
     """
     Commit changes with date.
@@ -78,14 +82,13 @@ class RepoManager(object):
         index = self.repo.index
         index.add([self.commit_file])
         commit_time = date.format('YYYY-MM-DDTHH:mm:ss')
-        index.commit("streaker strikes straight", author=self.author, committer=self.author, commit_date=commit_time, author_date=commit_time)
+        index.commit(config.COMMIT_MESSAGE, author=self.author, committer=self.author, commit_date=commit_time, author_date=commit_time)
 
 
 
     """
-    Check if the user hast write access the given path.
-    If the path does not exist that it check the parent folder.
-    This way the new repo could be initialized.
+    Checks if the user has write access to the member path.
+    If the path does not exist, than it checks the parent folder.
 
     :return: True if user has os.W_OK rights on the folder
     """
