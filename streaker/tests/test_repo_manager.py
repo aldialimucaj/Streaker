@@ -13,7 +13,7 @@ TMP_PATH = '/tmp/'
 class RepoManagerTest(unittest.TestCase):
 
     def setUp(self):
-        self.repo = RepoManager(TEST_PATH)
+        self.repo = RepoManager(path=TEST_PATH)
         print('RepoManagerTest::setup()')
 
     def tearDown(self):
@@ -26,8 +26,6 @@ class RepoManagerTest(unittest.TestCase):
         repo_mgr = RepoManager()
         self.assertEqual(repo_mgr.path, os.getcwd())
         self.assertEqual(repo_mgr.commit_file, os.path.join(os.getcwd(),config.COMMIT_FILE))
-        self.assertEqual(repo_mgr.author.name, config.COMMIT_AUTHOR['full_name'])
-        self.assertEqual(repo_mgr.author.email, config.COMMIT_AUTHOR['email'])
 
     def test_open_repo(self):
         self.assertFalse(os.path.isdir(TEST_PATH))
@@ -42,7 +40,7 @@ class RepoManagerTest(unittest.TestCase):
         self.assertTrue(self.repo.create_repo())
         self.assertFalse(self.repo.create_repo())
         # should not be able to create repo in restricted dir
-        new_repo = RepoManager('/root/repo')
+        new_repo = RepoManager(path='/root/repo')
         self.assertFalse(new_repo.create_repo())
 
     def test_generate_change(self):
@@ -55,7 +53,7 @@ class RepoManagerTest(unittest.TestCase):
 
     def test_commit(self):
         # prepare the repo
-        new_repo = RepoManager('/tmp/tostay')
+        new_repo = RepoManager(path='/tmp/tostay')
         new_repo.create_repo()
         new_repo.generate_change()
         # create a date at set to a year ago
@@ -64,18 +62,27 @@ class RepoManagerTest(unittest.TestCase):
         # commit with fake date
         new_repo.commit(commit_time)
         headcommit = new_repo.repo.head.commit
-        self.assertEqual(headcommit.author.name, config.COMMIT_AUTHOR['full_name'])
-        self.assertEqual(headcommit.author.email, config.COMMIT_AUTHOR['email'])
         test_commit_date = arrow.get(headcommit.authored_date)
         self.assertEqual(test_commit_date.year, 2015)
         self.assertEqual(test_commit_date.month, 1)
         self.assertEqual(test_commit_date.day, 1)
 
+    def test_push_to_remote(self):
+        # this test would fail on Travis because of credentials
+        if os.getenv('TRAVIS'): return
+
+        self.assertFalse(self.repo.push_to_remote())
+        # repo with remote
+        new_repo = RepoManager(path='/tmp/tostay', remote_url='git@github.com:aldialimucaj/streaker_test.git')
+        new_repo.create_repo()
+        new_repo.generate_change()
+        self.assertTrue(new_repo.push_to_remote())
+
 
     def test_check_rights(self):
         self.assertTrue(self.repo.check_rights())
         # should not be able to create repo in restricted dir
-        new_repo = RepoManager('/root/repo')
+        new_repo = RepoManager(path='/root/repo')
         self.assertFalse(new_repo.check_rights())
-        new_repo = RepoManager('/')
+        new_repo = RepoManager(path='/')
         self.assertFalse(new_repo.check_rights())

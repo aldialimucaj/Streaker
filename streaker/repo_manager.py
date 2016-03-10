@@ -1,4 +1,4 @@
-from git import (Repo, Actor)
+from git import (Repo, Actor, GitCommandError)
 import logging
 import arrow
 import os
@@ -20,9 +20,9 @@ class RepoManager(object):
 
     :param path: set a specific path to repo
     """
-    def __init__(self, path=os.getcwd()):
-        self.path = os.path.abspath(path)
-        self.author = Actor(config.COMMIT_AUTHOR['full_name'], config.COMMIT_AUTHOR['email'])
+    def __init__(self, **kwargs):
+        self.path = os.path.abspath(kwargs.get('path',os.getcwd()))
+        self.remote_url = kwargs.get('remote_url')
         self.commit_file = os.path.join(self.path, config.COMMIT_FILE)
 
     """
@@ -82,9 +82,38 @@ class RepoManager(object):
         index = self.repo.index
         index.add([self.commit_file])
         commit_time = date.format('YYYY-MM-DDTHH:mm:ss')
-        index.commit(config.COMMIT_MESSAGE, author=self.author, committer=self.author, commit_date=commit_time, author_date=commit_time)
+        index.commit(config.COMMIT_MESSAGE, commit_date=commit_time, author_date=commit_time)
 
 
+    """
+    Push new commits to GitHub repository
+
+    :return: True if succeeded
+    """
+    def push_to_remote(self):
+        # if the remote url was not specified then return
+        if not self.remote_url:
+            logger.error('push_to_remote() without URL')
+            return False
+
+        origin = self.repo.remotes.index('origin') if 'origin' in self.repo.remotes else None
+        if not origin:
+            # if origin does not exist, then create a local one with remote origin url
+            origin = self.repo.create_remote(name='origin',url=self.remote_url)
+            origin.fetch()
+
+        # pull and push to remote
+        try:
+            origin.pull()
+        except GitCommandError as e:
+            logger.error('push_to_remote(%s) - %s', self.remote_url, e)
+
+        try:
+            origin.push(self.repo.heads.master)
+        except GitCommandError as e:
+            logger.error('push_to_remote(%s) - %s', self.remote_url, e)
+
+        return True
 
     """
     Checks if the user has write access to the member path.

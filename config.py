@@ -5,8 +5,6 @@ COMMIT_FILE = '.streaker'
 # it should be small as the file tends to get many of these
 COMMIT_VALUE = '.'
 
-# git commit author
-COMMIT_AUTHOR = {'full_name': 'The Streaker', 'email': 'streaker@aldi.al'}
 
 # commit message
 COMMIT_MESSAGE = 'streaker strikes straight'
