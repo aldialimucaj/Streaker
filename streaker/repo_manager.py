@@ -4,45 +4,46 @@ import arrow
 import os
 import config
 
-
 logger = logging.getLogger(__name__)
-"""
-RepoManager takes care of the repository operations such as
- - creating/opening a repo
- - generating change
- - committing with date
- - pushing
-"""
+
+
 class RepoManager(object):
-
     """
-    RepoManager with set up date
-
-    :param path: set a specific path to repo
+    RepoManager takes care of the repository operations such as
+     - creating/opening a repo
+     - generating change
+     - committing with date
+     - pushing
     """
+
     def __init__(self, **kwargs):
+        """
+        RepoManager with set up date
+
+        :param path: set a specific path to repo
+        """
         self.path = os.path.abspath(kwargs.get('path',os.getcwd()))
         self.remote_url = kwargs.get('remote_url')
         self.commit_file = os.path.join(self.path, config.COMMIT_FILE)
 
-    """
-    Open existing repo passed in the constructor
-
-    :return: True if repo exists and accessable
-    """
     def open_repo(self):
+        """
+        Open existing repo passed in the constructor
+
+        :return: True if repo exists and accessable
+        """
         if self.check_rights and os.path.isdir(os.path.join(self.path, '.git')):
             self.repo = Repo(self.path)
             return self.repo != None
 
         return False
 
-    """
-    Create new repo from the path passed in the constructor.
-
-    :return: True if new repo created
-    """
     def create_repo(self):
+        """
+        Create new repo from the path passed in the constructor.
+
+        :return: True if new repo created
+        """
         if not os.path.isdir(os.path.join(self.path, '.git')):
             try:
                 os.mkdir(self.path)
@@ -55,12 +56,12 @@ class RepoManager(object):
 
         return False
 
-    """
-    Generate change to the COMMIT_FILE in order to create a commit.
-
-    :return: True if could write to file
-    """
     def generate_change(self):
+        """
+        Generate change to the COMMIT_FILE in order to create a commit.
+
+        :return: True if could write to file
+        """
         logger.info('Generating Change > %s ', self.commit_file)
         try:
             commit_file = open(self.commit_file, 'w')
@@ -72,12 +73,12 @@ class RepoManager(object):
 
         return False
 
-    """
-    Commit changes with date.
-
-    :param date: specific date to commit changes to. defaults to now
-    """
     def commit(self, date=arrow.utcnow()):
+        """
+        Commit changes with date.
+
+        :param date: specific date to commit changes to. defaults to now
+        """
         logger.info('Commiting > %s at %s', self.commit_file, date)
         index = self.repo.index
         index.add([self.commit_file])
@@ -85,12 +86,12 @@ class RepoManager(object):
         index.commit(config.COMMIT_MESSAGE, commit_date=commit_time, author_date=commit_time)
 
 
-    """
-    Push new commits to GitHub repository
-
-    :return: True if succeeded
-    """
     def push_to_remote(self):
+        """
+        Push new commits to GitHub repository
+
+        :return: True if succeeded
+        """
         # if the remote url was not specified then return
         if not self.remote_url:
             logger.error('push_to_remote() without URL')
@@ -113,12 +114,12 @@ class RepoManager(object):
 
         return True
 
-    """
-    Pull changes from remote GitHub repo_mgr
-
-    :return: True if succeeded
-    """
     def pull_from_remote(self):
+        """
+        Pull changes from remote GitHub repo_mgr
+
+        :return: True if succeeded
+        """
         # if the remote url was not specified then return
         if not self.remote_url:
             logger.error('push_to_remote() without URL')
@@ -143,13 +144,13 @@ class RepoManager(object):
 
         return True
 
-    """
-    Checks if the user has write access to the member path.
-    If the path does not exist, than it checks the parent folder.
-
-    :return: True if user has os.W_OK rights on the folder
-    """
     def check_rights(self):
+        """
+        Checks if the user has write access to the member path.
+        If the path does not exist, than it checks the parent folder.
+
+        :return: True if user has os.W_OK rights on the folder
+        """
         # check full path
         if os.path.isdir(self.path):
             return os.access(self.path,os.W_OK)
