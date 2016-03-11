@@ -99,7 +99,7 @@ class RepoManager(object):
         origin = None
 
         # only one remote will be used
-        if self.repo.remotes[0]:
+        if len(self.repo.remotes) > 0 and self.repo.remotes[0]:
             origin = self.repo.remotes.origin
 
         if not origin:
@@ -128,7 +128,7 @@ class RepoManager(object):
         origin = None
 
         # only one remote will be used
-        if self.repo.remotes[0]:
+        if len(self.repo.remotes) > 0 and self.repo.remotes[0]:
             origin = self.repo.remotes.origin
 
         if not origin:
