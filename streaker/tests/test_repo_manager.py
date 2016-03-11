@@ -68,16 +68,22 @@ class RepoManagerTest(unittest.TestCase):
         self.assertEqual(test_commit_date.day, 1)
 
     def test_push_to_remote(self):
+        self.assertFalse(self.repo.push_to_remote())
+
         # this test would fail on Travis because of credentials
         if os.getenv('TRAVIS'): return
-
-        self.assertFalse(self.repo.push_to_remote())
         # repo with remote
         new_repo = RepoManager(path='/tmp/tostay', remote_url='git@github.com:aldialimucaj/streaker_test.git')
         new_repo.create_repo()
         new_repo.generate_change()
         self.assertTrue(new_repo.push_to_remote())
 
+    def test_pull_from_remote(self):
+        self.assertFalse(self.repo.pull_from_remote())
+        # repo with remote
+        new_repo = RepoManager(path='/tmp/tosit', remote_url='git@github.com:aldialimucaj/streaker_test.git')
+        new_repo.create_repo()
+        self.assertTrue(new_repo.pull_from_remote())
 
     def test_check_rights(self):
         self.assertTrue(self.repo.check_rights())

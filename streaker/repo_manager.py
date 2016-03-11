@@ -96,7 +96,41 @@ class RepoManager(object):
             logger.error('push_to_remote() without URL')
             return False
 
-        origin = self.repo.remotes.index('origin') if 'origin' in self.repo.remotes else None
+        origin = None
+
+        # only one remote will be used
+        if self.repo.remotes[0]:
+            origin = self.repo.remotes.origin
+
+        if not origin:
+            # if origin does not exist, then create a local one with remote origin url
+            origin = self.repo.create_remote(name='origin',url=self.remote_url)
+            origin.fetch()
+
+        try:
+            origin.push(self.repo.heads.master,force=True)
+        except GitCommandError as e:
+            logger.error('push_to_remote(%s) - %s', self.remote_url, e)
+
+        return True
+
+    """
+    Pull changes from remote GitHub repo_mgr
+
+    :return: True if succeeded
+    """
+    def pull_from_remote(self):
+        # if the remote url was not specified then return
+        if not self.remote_url:
+            logger.error('push_to_remote() without URL')
+            return False
+
+        origin = None
+
+        # only one remote will be used
+        if self.repo.remotes[0]:
+            origin = self.repo.remotes.origin
+
         if not origin:
             # if origin does not exist, then create a local one with remote origin url
             origin = self.repo.create_remote(name='origin',url=self.remote_url)
@@ -104,12 +138,7 @@ class RepoManager(object):
 
         # pull and push to remote
         try:
-            origin.pull()
-        except GitCommandError as e:
-            logger.error('push_to_remote(%s) - %s', self.remote_url, e)
-
-        try:
-            origin.push(self.repo.heads.master)
+            origin.pull('master')
         except GitCommandError as e:
             logger.error('push_to_remote(%s) - %s', self.remote_url, e)
 
