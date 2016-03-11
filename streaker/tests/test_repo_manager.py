@@ -6,9 +6,15 @@ import arrow
 from streaker.repo_manager import RepoManager
 from git import Repo
 
-# CAREFUL this path will be deleted
-TEST_PATH = '/tmp/streaker_repo'
 TMP_PATH = '/tmp/'
+
+# CAREFUL this path will be deleted
+TEST_PATH   = '/tmp/streaker_repo'
+TEST_PATH_1 = '/tmp/streaker_repo1'
+TEST_PATH_2 = '/tmp/streaker_repo2'
+
+REMOTE_URL='git@github.com:aldialimucaj/streaker_test.git'
+
 
 class RepoManagerTest(unittest.TestCase):
 
@@ -17,9 +23,12 @@ class RepoManagerTest(unittest.TestCase):
         print('RepoManagerTest::setup()')
 
     def tearDown(self):
-        if os.path.isdir(TEST_PATH):
-            shutil.rmtree(TEST_PATH)
+        self.rm_dir(TEST_PATH)
         print('RepoManagerTest::teardown()')
+
+    def rm_dir(self, del_dir):
+        if os.path.isdir(del_dir):
+            shutil.rmtree(del_dir)
 
     # testing default constructor with no path -> current dir
     def test_repo_manager_c1_1(self):
@@ -53,7 +62,7 @@ class RepoManagerTest(unittest.TestCase):
 
     def test_commit(self):
         # prepare the repo
-        new_repo = RepoManager(path='/tmp/tostay')
+        new_repo = RepoManager(path=TEST_PATH_1)
         new_repo.create_repo()
         new_repo.generate_change()
         # create a date at set to a year ago
@@ -73,15 +82,17 @@ class RepoManagerTest(unittest.TestCase):
         # this test would fail on Travis because of credentials
         if os.getenv('TRAVIS'): return
         # repo with remote
-        new_repo = RepoManager(path='/tmp/tostay', remote_url='git@github.com:aldialimucaj/streaker_test.git')
+        new_repo = RepoManager(path=TEST_PATH_1, remote_url=REMOTE_URL)
         new_repo.create_repo()
         new_repo.generate_change()
+        new_repo.commit()
         self.assertTrue(new_repo.push_to_remote())
 
     def test_pull_from_remote(self):
         self.assertFalse(self.repo.pull_from_remote())
         # repo with remote
-        new_repo = RepoManager(path='/tmp/tosit', remote_url='git@github.com:aldialimucaj/streaker_test.git')
+        self.rm_dir(TEST_PATH_2)
+        new_repo = RepoManager(path=TEST_PATH_2, remote_url=REMOTE_URL)
         new_repo.create_repo()
         self.assertTrue(new_repo.pull_from_remote())
 

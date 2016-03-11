@@ -105,7 +105,6 @@ class RepoManager(object):
         if not origin:
             # if origin does not exist, then create a local one with remote origin url
             origin = self.repo.create_remote(name='origin',url=self.remote_url)
-            origin.fetch()
 
         try:
             origin.push(self.repo.heads.master,force=True)
